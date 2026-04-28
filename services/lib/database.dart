@@ -31,7 +31,15 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
+        onCreate: (m) async {
+          await m.createAll();
+          await into(users).insert(UsersCompanion.insert(
+            username: 'dummy_account1',
+            // SHA-256 of "DuMmMyAccount1#"
+            hashedPassword:
+                '6341d395356ea23c7ce6e07ba4fe201671fee26979f61d37bdf0598babc322b2',
+          ));
+        },
       );
 }
 

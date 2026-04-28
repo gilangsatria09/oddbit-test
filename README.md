@@ -65,6 +65,13 @@ You will be prompted to select a target:
 
 For physical device, enter the IP address of the machine running the server when prompted.
 
-## Note
+## Default Account
 
-The backend uses a local SQLite database with no pre-seeded accounts. You must **register a new account** before logging in.
+On first run, the backend automatically creates a seed account:
+
+| Field    | Value             |
+|----------|-------------------|
+| Username | `dummy_account1`  |
+| Password | `DuMmMyAccount1#` |
+
+You can log in with this account immediately, or register a new one.
