@@ -10,6 +10,11 @@ A full-stack notes application built with Flutter (mobile) and Dart Frog (backen
 
 - Flutter `3.38.4`
 - Dart `3.10.3`
+- Dart Frog CLI — install once globally:
+
+```bash
+dart pub global activate dart_frog_cli
+```
 
 ## Project Structure
 
