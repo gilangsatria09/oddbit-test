@@ -17,6 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends BasePage<HomePage> {
   late HomeBloc _homeBloc;
   int? _updatingNoteId;
+  int? _deletingNoteId;
 
   @override
   void initState() {
@@ -67,6 +68,21 @@ class _HomePageState extends BasePage<HomePage> {
           },
           listenWhen: (previous, current) =>
               previous.updateState != current.updateState,
+        ),
+        BlocListener<HomeBloc, HomeState>(
+          listener: (context, state) {
+            state.deleteState.maybeWhen(
+              loaded: (message) {
+                _homeBloc.add(HomeEvent.getNotes());
+                showSnackBar(message);
+                setState(() => _deletingNoteId = null);
+              },
+              failed: (_) => setState(() => _deletingNoteId = null),
+              orElse: () => null,
+            );
+          },
+          listenWhen: (previous, current) =>
+              previous.deleteState != current.deleteState,
         ),
       ],
       child: Scaffold(
@@ -148,41 +164,64 @@ class _HomePageState extends BasePage<HomePage> {
                 return ListTile(
                   title: Text(note.title),
                   subtitle: Text(note.content),
-                  trailing:
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       _updatingNoteId == note.id &&
-                          state.updateState.maybeWhen(
-                            loading: () => true,
-                            orElse: () => false,
-                          )
-                      ? SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator.adaptive(
-                            strokeWidth: 2.5,
-                          ),
-                        )
-                      : IconButton(
-                          onPressed: () {
-                            AppRouter.homeRoutes.goToUpdateNote(
-                              context,
-                              note: note,
-                              onSubmitted: (data) {
-                                setState(() => _updatingNoteId = note.id);
-                                _homeBloc.add(
-                                  HomeEvent.updateNote(
-                                    UpdateNoteParams(
-                                      id: note.id,
-                                      title: data.title,
-                                      content: data.content,
-                                    ),
-                                  ),
+                              state.updateState.maybeWhen(
+                                loading: () => true,
+                                orElse: () => false,
+                              )
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator.adaptive(
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: () {
+                                AppRouter.homeRoutes.goToUpdateNote(
+                                  context,
+                                  note: note,
+                                  onSubmitted: (data) {
+                                    setState(() => _updatingNoteId = note.id);
+                                    _homeBloc.add(
+                                      HomeEvent.updateNote(
+                                        UpdateNoteParams(
+                                          id: note.id,
+                                          title: data.title,
+                                          content: data.content,
+                                        ),
+                                      ),
+                                    );
+                                    context.pop();
+                                  },
                                 );
-                                context.pop();
                               },
-                            );
-                          },
-                          icon: Icon(Icons.edit, color: Colors.teal),
-                        ),
+                              icon: const Icon(Icons.edit, color: Colors.teal),
+                            ),
+                      _deletingNoteId == note.id &&
+                              state.deleteState.maybeWhen(
+                                loading: () => true,
+                                orElse: () => false,
+                              )
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator.adaptive(
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: () {
+                                setState(() => _deletingNoteId = note.id);
+                                _homeBloc.add(HomeEvent.deleteNote(note.id));
+                              },
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                            ),
+                    ],
+                  ),
                   onTap: () {
                     _homeBloc.add(HomeEvent.getNote(note.id));
                   },
