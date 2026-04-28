@@ -1,0 +1,23 @@
+name: services
+description: Notes app backend using Dart Frog
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  dart_frog: ^1.2.6
+  drift: ^2.32.1
+  sqlite3: ^3.2.0
+  dart_jsonwebtoken: ^3.4.1
+  crypto: ^3.0.3
+  envied: ^1.3.4
+  dart_frog_auth: ^1.2.2
+
+
+dev_dependencies:
+  drift_dev: ^2.32.1
+  build_runner: ^2.13.1
+  envied_generator: ^1.3.4
+  dart_frog_cli: ^1.2.14

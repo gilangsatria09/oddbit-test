@@ -1,0 +1,387 @@
+openapi: 3.0.3
+info:
+  title: Notes API
+  description: REST API for the Notes App built with Dart Frog
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          nullable: true
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                password:
+                  type: string
+                  minLength: 6
+                  example: secret123
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          username:
+                            type: string
+                            example: johndoe
+              example:
+                statusCode: 201
+                message: User registered successfully
+                data:
+                  id: 1
+                  username: johndoe
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              example:
+                statusCode: 400
+                message: Username and password (min 6 chars) required
+                data: null
+        "409":
+          description: Username already taken
+          content:
+            application/json:
+              example:
+                statusCode: 409
+                message: Username already taken
+                data: null
+
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login and receive a JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                password:
+                  type: string
+                  example: secret123
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+              example:
+                statusCode: 200
+                message: Login successful
+                data:
+                  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "400":
+          description: Missing credentials
+          content:
+            application/json:
+              example:
+                statusCode: 400
+                message: Missing credentials
+                data: null
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              example:
+                statusCode: 401
+                message: Invalid credentials
+                data: null
+
+  /api/notes:
+    get:
+      tags:
+        - Notes
+      summary: Get all notes for the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Notes fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Note"
+              example:
+                statusCode: 200
+                message: Notes fetched successfully
+                data:
+                  - id: 1
+                    title: My first note
+                    content: Hello world
+                    createdAt: "2026-04-28T10:00:00.000Z"
+                    updatedAt: "2026-04-28T10:00:00.000Z"
+        "401":
+          description: Unauthorized
+
+    post:
+      tags:
+        - Notes
+      summary: Create a new note
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                  example: My first note
+                content:
+                  type: string
+                  example: Hello world
+      responses:
+        "201":
+          description: Note created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Note"
+              example:
+                statusCode: 201
+                message: Note created successfully
+                data:
+                  id: 1
+                  title: My first note
+                  content: Hello world
+                  createdAt: "2026-04-28T10:00:00.000Z"
+                  updatedAt: "2026-04-28T10:00:00.000Z"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                missing_title:
+                  value:
+                    statusCode: 400
+                    message: Title is required
+                    data: null
+                missing_content:
+                  value:
+                    statusCode: 400
+                    message: Content is required
+                    data: null
+        "401":
+          description: Unauthorized
+
+  /api/notes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        example: 1
+
+    get:
+      tags:
+        - Notes
+      summary: Get a specific note by ID
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Note fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Note"
+              example:
+                statusCode: 200
+                message: Note fetched successfully
+                data:
+                  id: 1
+                  title: My first note
+                  content: Hello world
+                  createdAt: "2026-04-28T10:00:00.000Z"
+                  updatedAt: "2026-04-28T10:00:00.000Z"
+        "400":
+          description: Invalid note ID
+          content:
+            application/json:
+              example:
+                statusCode: 400
+                message: Invalid note ID
+                data: null
+        "401":
+          description: Unauthorized
+        "404":
+          description: Note not found
+          content:
+            application/json:
+              example:
+                statusCode: 404
+                message: Note not found
+                data: null
+
+    put:
+      tags:
+        - Notes
+      summary: Update a note
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                  example: Updated title
+                content:
+                  type: string
+                  example: Updated content
+      responses:
+        "200":
+          description: Note updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Note"
+              example:
+                statusCode: 200
+                message: Note updated successfully
+                data:
+                  id: 1
+                  title: Updated title
+                  content: Updated content
+                  createdAt: "2026-04-28T10:00:00.000Z"
+                  updatedAt: "2026-04-28T11:00:00.000Z"
+        "400":
+          description: Validation error
+        "401":
+          description: Unauthorized
+        "404":
+          description: Note not found
+
+    delete:
+      tags:
+        - Notes
+      summary: Delete a note
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Note deleted successfully
+          content:
+            application/json:
+              example:
+                statusCode: 200
+                message: Note deleted successfully
+                data: null
+        "400":
+          description: Invalid note ID
+        "401":
+          description: Unauthorized
+        "404":
+          description: Note not found
