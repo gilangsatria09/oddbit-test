@@ -1,2 +1,5 @@
 # Generated files (build_runner, drift, envied)
 **/*.g.dart
+
+# Database files
+*.db
