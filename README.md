@@ -64,3 +64,7 @@ You will be prompted to select a target:
 | 3 | Physical Device | `http://<your-ip>:8080` |
 
 For physical device, enter the IP address of the machine running the server when prompted.
+
+## Note
+
+The backend uses a local SQLite database with no pre-seeded accounts. You must **register a new account** before logging in.
